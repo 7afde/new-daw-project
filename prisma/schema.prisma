@@ -1,0 +1,206 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id            String         @id @default(cuid())
+  username      String         @unique
+  notifications Notification[] // Admin receives notifications
+}
+
+model Student {
+  id           String        @id @default(cuid())
+  username     String        @unique
+  name         String
+  surname      String
+  email        String?       @unique
+  phone        String?       @unique
+  skills       String? // For students
+  sex          UserSex
+  createdAt    DateTime      @default(now())
+  groupId      String?
+  group        Group?        @relation(fields: [groupId], references: [id]) // Relation to groups
+  groupMembers GroupMember[]
+
+  projectId String? // Track the assigned project
+  project   Project? @relation(fields: [projectId], references: [id]) // Relation to Project
+
+  Project Project[] @relation("StudentProject")
+  Group   Group[]   @relation("StudentGroup")
+
+  // Messaging
+  messagesSent     Message[] @relation("StudentMessageSender")
+  messagesReceived Message[] @relation("StudentMessageReceiver")
+
+  notifications Notification[] // Student receives notifications
+}
+
+model Lesson {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  date        DateTime @default(now())
+  teacherId   String
+  teacher     Teacher  @relation(fields: [teacherId], references: [id]) // Relation to Teacher
+}
+
+model Teacher {
+  id             String         @id @default(cuid())
+  username       String         @unique
+  name           String
+  surname        String
+  email          String?        @unique
+  phone          String?        @unique
+  address        String
+  img            String?
+  sex            UserSex
+  specialization Specialization // For teachers
+  createdAt      DateTime       @default(now())
+  lessons        Lesson[]
+
+  // Relation to Project and Group
+  projects Project[] // Relation to projects (Teacher manages multiple projects)
+  groups   Group[] // Relation to groups (Teacher manages multiple groups)
+
+  // Messaging
+  messagesSent     Message[] @relation("TeacherMessageSender")
+  messagesReceived Message[] @relation("TeacherMessageReceiver")
+
+  notifications Notification[] // Teacher receives notifications
+}
+
+model Project {
+  id           String        @id @default(cuid())
+  title        String
+  description  String
+  domain       String
+  technologies String
+  keywords     String
+  status       ProjectStatus @default(OPEN)
+  teacherId    String
+  teacher      Teacher       @relation(fields: [teacherId], references: [id]) // Relation to Teacher
+  groups       Group[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  applications Application[]
+
+  students Student[] @relation("StudentProject")
+
+  Student Student[]
+}
+
+model Group {
+  id           String        @id @default(cuid())
+  projectId    String
+  project      Project       @relation(fields: [projectId], references: [id]) // Relation to Project
+  status       GroupStatus   @default(PENDING)
+  members      GroupMember[]
+  applications Application[]
+
+  students  Student[] @relation("StudentGroup")
+  teacherId String? // Teacher supervising the group
+  teacher   Teacher?  @relation(fields: [teacherId], references: [id]) // Relation to Teacher
+
+  Student Student[]
+}
+
+model GroupMember {
+  id        String  @id @default(cuid())
+  groupId   String
+  group     Group   @relation(fields: [groupId], references: [id]) // Relation to Group
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id]) // Relation to Student
+}
+
+model Application {
+  id          String            @id @default(cuid())
+  groupId     String
+  group       Group             @relation(fields: [groupId], references: [id]) // Relation to Group
+  projectId   String
+  project     Project           @relation(fields: [projectId], references: [id]) // Relation to Project
+  status      ApplicationStatus @default(PENDING)
+  submittedAt DateTime          @default(now())
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  senderId   String
+  sender     Teacher  @relation("TeacherMessageSender", fields: [senderId], references: [id]) // Teacher as sender
+  receiverId String
+  receiver   Student  @relation("StudentMessageReceiver", fields: [receiverId], references: [id]) // Student as receiver
+  content    String
+  timestamp  DateTime @default(now())
+
+  Student Student[] @relation("StudentMessageSender")
+
+  Teacher Teacher[] @relation("TeacherMessageReceiver")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  teacherId String? // Nullable foreign key for Teacher
+  teacher   Teacher?         @relation(fields: [teacherId], references: [id]) // Relation to Teacher
+  studentId String? // Nullable foreign key for Student
+  student   Student?         @relation(fields: [studentId], references: [id]) // Relation to Student
+  adminId   String? // Nullable foreign key for Admin
+  admin     Admin?           @relation(fields: [adminId], references: [id]) // Relation to Admin
+  message   String
+  type      NotificationType
+  createdAt DateTime         @default(now())
+}
+
+model AdminSetting {
+  id                        String   @id @default(cuid())
+  maxProjectsPerTeacher     Int
+  maxGroupSize              Int
+  maxApplicationsPerStudent Int
+  submissionDeadline        DateTime
+  applicationDeadline       DateTime
+}
+
+enum Role {
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+enum Specialization {
+  GL
+  TI
+  SI
+  SCI
+}
+
+enum ProjectStatus {
+  OPEN
+  ASSIGNED
+  COMPLETED
+}
+
+enum GroupStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum NotificationType {
+  APPLICATION
+  MESSAGE
+  UPDATE
+}
+
+enum UserSex {
+  MALE
+  FEMALE
+}
