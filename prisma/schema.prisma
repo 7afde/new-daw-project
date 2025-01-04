@@ -17,6 +17,7 @@ model Student {
   id           String        @id @default(cuid())
   username     String        @unique
   name         String
+  password     String?   
   surname      String
   email        String?       @unique
   phone        String?       @unique
@@ -40,18 +41,10 @@ model Student {
   notifications Notification[] // Student receives notifications
 }
 
-model Lesson {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  date        DateTime @default(now())
-  teacherId   String
-  teacher     Teacher  @relation(fields: [teacherId], references: [id]) // Relation to Teacher
-}
-
 model Teacher {
   id             String         @id @default(cuid())
   username       String         @unique
+  password       String?        
   name           String
   surname        String
   email          String?        @unique
@@ -61,12 +54,10 @@ model Teacher {
   sex            UserSex
   specialization Specialization // For teachers
   createdAt      DateTime       @default(now())
-  lessons        Lesson[]
 
   // Relation to Project and Group
   projects Project[] // Relation to projects (Teacher manages multiple projects)
   groups   Group[] // Relation to groups (Teacher manages multiple groups)
-
   // Messaging
   messagesSent     Message[] @relation("TeacherMessageSender")
   messagesReceived Message[] @relation("TeacherMessageReceiver")
