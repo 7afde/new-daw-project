@@ -10,76 +10,79 @@ import {
   Project,
   Specialization,
   Teacher,
+ Student
+  
 } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 
-type TeacherList = Teacher & { projects: Project[] } & { groups: Group[] };
+// type TeacherList = Teacher & { projects: Project[] } & { groups: Group[] };
+type GroupList = Group & { project  : Project } & { teacher: Teacher } & { Student: Student[] };
 
 const columns = [
   {
-    header: "Info",
-    accessor: "info",
+    header: "group",
+    accessor: "group",
   },
   {
-    header: "Projects",
+    header: "project",
     accessor: "project",
     className: "hidden md:table-cell",
   },
-  {
-    header: "Specialization",
-    accessor: "specialization",
-    className: "hidden md:table-cell",
-  },
   // {
-  //   header: "Classes",
-  //   accessor: "classes",
+  //   header: "members",
+  //   accessor: "members",
   //   className: "hidden md:table-cell",
   // },
+  
   {
-    header: "Phone",
-    accessor: "phone",
+    header: "teacher",
+    accessor: "teacher",
     className: "hidden lg:table-cell",
   },
-  // {
-  //   header: "Address",
-  //   accessor: "address",
-  //   className: "hidden lg:table-cell",
-  // },
+  {
+    header: "Status",
+    accessor: "status",
+  },
   {
     header: "Actions",
     accessor: "action",
   },
 ];
 
-const renderRow = (item: TeacherList) => (
+const renderRow = (item: GroupList) => (
   <tr
     key={item.id}
     className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
   >
     <td className="flex items-center gap-4 p-4">
-      <Image
-        src={item.img || "/noAvatar.png"}
-        alt=""
-        width={40}
-        height={40}
-        className="md:hidden xl:block w-10 h-10 rounded-full object-cover"
-      />
+      
       <div className="flex flex-col">
-        <h3 className="font-semibold">
-          {item.name} {item.surname}
-        </h3>
-        <p className="text-xs text-gray-500">{item?.email}</p>
+      <td className="md:table-cell">
+  {item.Student && item.Student.length > 0
+    ? item.Student.map((student) => (
+        <div key={student.id}>{student.name}</div>
+      ))
+    : "No Student assigned"}
+</td>
       </div>
     </td>
     <td className="hidden md:table-cell">
-      {item.projects.map((project) => project.title).join(",") ||
-        "No Projects assigned"}
-    </td>
+  {item.project?.title || "No Project Assigned"}
+</td>
     {/* <td className="hidden md:table-cell">{item.classes.join(",")}</td> */}
-    <td className="hidden md:table-cell">{item.specialization}</td>
-    <td className="hidden md:table-cell">{item.phone}</td>
+    <td className=" md:table-cell">{
+      item.teacher?.surname || "No Teacher Assigned"
+    
+    }</td>
+    <td>
+      <span
+        
+      >
+        {item.status ? "pending" : "pending"}
+      </span>
+    </td>
     <td>
       <div className="flex items-center gap-2">
         <Link href={`/list/teachers/${item.id}`}>
@@ -88,17 +91,15 @@ const renderRow = (item: TeacherList) => (
           </button>
         </Link>
         {role === "admin" && (
-          // <button className="w-7 h-7 flex items-center justify-center rounded-full bg-lamaPurple">
-          //   <Image src="/delete.png" alt="" width={16} height={16} />
-          // </button>
-          <FormModal table="teacher" type="delete" id={Number(item.id)} />
+
+          <FormModal table="class" type="delete" id={Number(item.id)} />
         )}
       </div>
     </td>
   </tr>
 );
 
-const TeacherListPage = async ({
+const GroupListPage = async ({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
@@ -109,25 +110,21 @@ const TeacherListPage = async ({
 
   // URL PARAMS CONDITION
 
-  const query: Prisma.TeacherWhereInput = {};
+  const query: Prisma.GroupWhereInput = {};
 
   if (queryParams) {
     for (const [key, value] of Object.entries(queryParams)) {
       if (value !== undefined) {
         switch (key) {
-          case "projectId":
-            query.projects = {
+          case "applicationId":
+            query.applications = {
               some: {
                 id: value,
               },
             };
             break;
-          case "specialization":
-            query.specialization = value as Specialization;
-            break;
-          case "search":
-            query.name = { contains: value, mode: "insensitive" };
-            break;
+         
+          
           default:
             break;
         }
@@ -136,16 +133,19 @@ const TeacherListPage = async ({
   }
 
   const [data, count] = await prisma.$transaction([
-    prisma.teacher.findMany({
+    prisma.group.findMany({
       where: query,
       include: {
-        projects: true,
-        groups: true,
+        members: true,
+        Student: true,
+        project: true,
+        teacher: true,
+
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
     }),
-    prisma.teacher.count({ where: query }),
+    prisma.group.count({ where: query }),
   ]);
 
   return (
@@ -185,7 +185,7 @@ const TeacherListPage = async ({
   );
 };
 
-export default TeacherListPage;
+export default GroupListPage;
 
 
 
