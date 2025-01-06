@@ -25,8 +25,8 @@ const columns = [
     className: "hidden md:table-cell",
   },
   {
-    header: "Grade",
-    accessor: "grade",
+    header: "Project",
+    accessor: "project",
     className: "hidden md:table-cell",
   },
   {
@@ -35,8 +35,8 @@ const columns = [
     className: "hidden lg:table-cell",
   },
   {
-    header: "Address",
-    accessor: "address",
+    header: "Group",
+    accessor: "group",
     className: "hidden lg:table-cell",
   },
   {
@@ -60,13 +60,19 @@ const renderRow = (item: StudentList) => (
       />
       <div className="flex flex-col">
         <h3 className="font-semibold">{item.name}</h3>
-        <p className="text-xs text-gray-500">{item.class}</p>
+        <p className="text-xs text-gray-500">{item.email}</p>
       </div>
     </td>
-    <td className="hidden md:table-cell">{item.studentId}</td>
-    <td className="hidden md:table-cell">{item.grade}</td>
+    <td className="hidden md:table-cell">{item.id}</td>
+    <td className="hidden md:table-cell">
+      {item?.project ? (
+        <span>{item.project.title}</span>
+      ) : (
+        <span className="text-gray-500 italic">No Project</span>
+      )}
+    </td>
     <td className="hidden md:table-cell">{item.phone}</td>
-    <td className="hidden md:table-cell">{item.address}</td>
+    <td className="hidden md:table-cell">{item.groupId}</td>
     <td>
       <div className="flex items-center gap-2">
         <Link href={`/list/students/${item.id}`}>

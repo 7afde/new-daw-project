@@ -32,13 +32,13 @@ const menuItems = [
       },
       {
         icon: "/exam.png",
-        label: "Applications",
+        label: "Teachers Applications",
         href: "/list/applicationsTeachers",
-        visible: ["admin", "student"],
+        visible: ["admin", "teacher"],
       },
       {
-        icon: "/exam.png",
-        label: "Applications",
+        icon: "/class.png",
+        label: "Students Applications",
         href: "/list/applicationsStudents",
         visible: ["admin", "student"],
       },
@@ -46,7 +46,7 @@ const menuItems = [
         icon: "/class.png",
         label: "Groups",
         href: "/list/groups",
-        visible: ["admin", "teacher", "student"],
+        visible: ["admin"],
       },
       {
         icon: "/message.png",

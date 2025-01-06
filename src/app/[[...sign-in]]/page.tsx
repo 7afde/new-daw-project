@@ -28,8 +28,14 @@ const LoginPage = () => {
           className="bg-white p-12 rounded-md shadow-2xl flex flex-col gap-2"
         >
           <h1 className="text-xl font-bold flex items-center gap-2">
-            <Image src="/logo.png" alt="" width={24} height={24} />
-            SchooLama
+            <Image
+              src="/logo.jpg"
+              alt=""
+              width={80}
+              height={80}
+              className="w-auto h-auto"
+            />
+            CneUni2
           </h1>
           <h2 className="text-gray-400">Sign in to your account</h2>
           <Clerk.GlobalError className="text-sm text-red-400" />

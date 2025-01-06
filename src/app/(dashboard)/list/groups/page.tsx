@@ -10,15 +10,16 @@ import {
   Project,
   Specialization,
   Teacher,
- Student
-  
+  Student,
 } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 
 // type TeacherList = Teacher & { projects: Project[] } & { groups: Group[] };
-type GroupList = Group & { project  : Project } & { teacher: Teacher } & { Student: Student[] };
+type GroupList = Group & { project: Project } & { teacher: Teacher } & {
+  Student: Student[];
+};
 
 const columns = [
   {
@@ -35,7 +36,7 @@ const columns = [
   //   accessor: "members",
   //   className: "hidden md:table-cell",
   // },
-  
+
   {
     header: "teacher",
     accessor: "teacher",
@@ -57,31 +58,25 @@ const renderRow = (item: GroupList) => (
     className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
   >
     <td className="flex items-center gap-4 p-4">
-      
       <div className="flex flex-col">
-      <td className="md:table-cell">
-  {item.Student && item.Student.length > 0
-    ? item.Student.map((student) => (
-        <div key={student.id}>{student.name}</div>
-      ))
-    : "No Student assigned"}
-</td>
+        <td className="md:table-cell">
+          {item.Student && item.Student.length > 0
+            ? item.Student.map((student) => (
+                <div key={student.id}>{student.name}</div>
+              ))
+            : "No Student assigned"}
+        </td>
       </div>
     </td>
     <td className="hidden md:table-cell">
-  {item.project?.title || "No Project Assigned"}
-</td>
+      {item.project?.title || "No Project Assigned"}
+    </td>
     {/* <td className="hidden md:table-cell">{item.classes.join(",")}</td> */}
-    <td className=" md:table-cell">{
-      item.teacher?.surname || "No Teacher Assigned"
-    
-    }</td>
+    <td className=" md:table-cell">
+      {item.teacher?.surname || "No Teacher Assigned"}
+    </td>
     <td>
-      <span
-        
-      >
-        {item.status ? "pending" : "pending"}
-      </span>
+      <span>{item.status ? "pending" : "pending"}</span>
     </td>
     <td>
       <div className="flex items-center gap-2">
@@ -91,7 +86,6 @@ const renderRow = (item: GroupList) => (
           </button>
         </Link>
         {role === "admin" && (
-
           <FormModal table="class" type="delete" id={Number(item.id)} />
         )}
       </div>
@@ -123,8 +117,7 @@ const GroupListPage = async ({
               },
             };
             break;
-         
-          
+
           default:
             break;
         }
@@ -140,7 +133,6 @@ const GroupListPage = async ({
         Student: true,
         project: true,
         teacher: true,
-
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
@@ -153,9 +145,7 @@ const GroupListPage = async ({
       {/* TOP */}
       <div>
         <div className="flex items-center justify-between">
-          <h1 className="hidden md:block text-lg font-semibold">
-            All Teachers
-          </h1>
+          <h1 className="hidden md:block text-lg font-semibold">All Groups</h1>
           <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
             <TableSearch />
             <div className="flex items-center gap-4 self-end">
@@ -186,7 +176,5 @@ const GroupListPage = async ({
 };
 
 export default GroupListPage;
-
-
 
 /// implement group page and get them from the db , like the page above it " projects"
